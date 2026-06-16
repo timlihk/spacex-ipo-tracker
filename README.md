@@ -32,6 +32,12 @@ If the AI is full of it, you'll see it. If the system has alpha, you'll see that
 
 **Not in the watchlist**: GOOGL, NVDA, MSFT, AMZN, IBM, TSLA. Those are Mag-7 / mega-caps where SpaceX exposure is a rounding error or already priced in. This tracker is specifically about pure-play small-cap signal.
 
+## Narrative pillars
+
+Each daily brief is read through long-form theses, not just same-day technicals. New theses get added when a piece of writing genuinely reframes the basket.
+
+- **Space-based data centers for agentic inference** — Ben Thompson, ["The SpaceX IPO and Data Centers in Space"](https://stratechery.com/2026/the-spacex-ipo-and-data-centers-in-space/), Stratechery 2026-05-27 (free). Argument: terrestrial zoning + capacity constraints will push agentic inference workloads off the planet. If true, the LMT / RKLB / RDW positioning shifts from "SpaceX customer" to "orbital DC supplier" — a strictly larger TAM than launch services. Watch: any LMT or RDW design-win mention of "space data center" or "orbital edge compute" gets flagged in the catalyst column.
+
 ## How the daily brief is produced
 
 ```
