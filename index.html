@@ -3,169 +3,256 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SpaceX-IPO-Tracker — Daily AI Stock Research</title>
-<meta name="description" content="Daily AI-managed stock research on 14 SpaceX-IPO beneficiaries across 4 sectors (Space, Physical AI, AI Infra, Drones). Multi-agent LLM Bull/Bear/Judge + 12 technical signals. Publicly Brier-audited.">
-<meta property="og:title" content="SpaceX-IPO-Tracker — Daily AI Stock Research">
-<meta property="og:description" content="14-ticker watchlist, multi-agent LLM decisions, Brier-audited every night. Open source. ~$0.10/day. 2026-05-12 → SpaceX IPO settlement.">
+<title>SpaceX Supply Chain Atlas — Combined Research</title>
+<meta name="description" content="Comprehensive SpaceX supply chain map: 43 tickers across 8 layers. Combines TradingView watchlist, alex-jb/spacex-ipo-tracker (GitHub), and Hawkmont Research. Each ticker researched with SpaceX relationship, contracts, and key products.">
+<meta property="og:title" content="SpaceX Supply Chain Atlas — Combined Research">
+<meta property="og:description" content="43-ticker supply chain map across materials, components, RF/comms, additive manufacturing, launch services, power, AI infrastructure, and direct SpaceX exposure.">
 <style>
   :root {
-    --ink:#0a0a0c; --paper:#fafaf7; --rule:#dad6c8;
-    --accent:#8c3a14; --accent-soft:#f0e3d4;
-    --green:#16a34a; --amber:#d4a017; --red:#dc2626;
-    --ink-soft:#3f3f46; --ink-dim:#71717a;
+    --bg:#0d0e12; --surface:#15171d; --surface2:#1c1f27; --border:#2a2d37;
+    --text:#e4e4e7; --text-dim:#9ca3af; --text-bright:#f4f4f5;
+    --accent:#f97316; --accent-soft:rgba(249,115,22,0.12);
+    --blue:#3b82f6; --green:#22c55e; --red:#ef4444; --amber:#eab308;
+    --purple:#a855f7; --cyan:#06b6d4;
   }
-  * { box-sizing:border-box; }
-  html,body { margin:0; padding:0; background:var(--paper); color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Source Han Serif SC",Georgia,serif;
-    font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased; }
-  .page { max-width:880px; margin:0 auto; padding:48px 24px 96px; }
-  header.hero { border-bottom:3px double var(--ink); padding-bottom:24px; margin-bottom:40px; }
-  header.hero h1 {
-    font-family:ui-serif,Georgia,serif; font-size:42px; font-weight:700;
-    letter-spacing:-1px; margin:0 0 8px; line-height:1.1;
-  }
-  header.hero .tagline {
-    font-size:18px; color:var(--ink-soft); margin-bottom:16px; max-width:640px;
-  }
-  header.hero .meta {
-    font-size:13px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:1.5px;
-  }
-  header.hero .meta a { color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent-soft); }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
 
-  section.thesis {
-    background:var(--accent-soft); border-left:3px solid var(--accent);
-    padding:18px 22px; margin:24px 0; border-radius:2px;
-    font-family:ui-serif,Georgia,serif; font-style:italic; font-size:17px;
-  }
+  .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-  .sector-grid {
-    display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin:28px 0;
-  }
-  .sector-card {
-    border:1px solid var(--rule); border-radius:6px; padding:16px;
-    background:#fff;
-  }
-  .sector-card h3 { margin:0 0 8px; font-size:17px; font-family:ui-serif,Georgia,serif; }
-  .sector-card .tickers {
-    font-family:ui-monospace,SF Mono,Menlo,monospace; font-size:13px;
-    color:var(--ink-dim); letter-spacing:0.5px;
-  }
+  /* Hero */
+  header.hero{padding:56px 0 32px;border-bottom:1px solid var(--border)}
+  header.hero h1{font-size:36px;font-weight:800;letter-spacing:-0.5px;color:var(--text-bright);margin-bottom:8px}
+  header.hero .tagline{font-size:17px;color:var(--text-dim);max-width:720px;margin-bottom:16px}
+  header.hero .meta{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--text-dim)}
+  header.hero .meta span{display:flex;align-items:center;gap:6px}
+  header.hero .meta .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
 
-  section.signals { margin:36px 0; }
-  section.signals h2 {
-    font-family:ui-serif,Georgia,serif; font-size:24px; font-weight:700;
-    border-bottom:1px dashed var(--rule); padding-bottom:6px; margin:0 0 16px;
-  }
-  ul.signal-list { padding-left:22px; }
-  ul.signal-list li { margin-bottom:10px; color:var(--ink-soft); }
-  ul.signal-list strong { color:var(--ink); }
+  /* Stats strip */
+  .stats{display:flex;gap:16px;flex-wrap:wrap;padding:24px 0}
+  .stat{flex:1;min-width:130px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+  .stat .label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:4px}
+  .stat .value{font-size:28px;font-weight:700;color:var(--accent)}
+  .stat .sub{font-size:12px;color:var(--text-dim);margin-top:2px}
 
-  table.briefs {
-    width:100%; border-collapse:collapse; margin:16px 0;
-  }
-  table.briefs th, table.briefs td {
-    border-bottom:1px solid var(--rule); padding:10px 12px; text-align:left;
-    font-size:14px;
-  }
-  table.briefs th {
-    font-family:ui-serif,Georgia,serif; font-weight:700; color:var(--ink);
-    background:#f5f3ec;
-  }
-  table.briefs td a { color:var(--accent); text-decoration:none; border-bottom:1px dotted var(--accent-soft); }
-  table.briefs td a:hover { border-bottom:1px solid var(--accent); }
+  /* Source badges */
+  .sources{display:flex;gap:8px;flex-wrap:wrap;padding:0 0 24px}
+  .source-badge{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text-dim)}
+  .source-badge.tv{border-color:var(--blue);color:var(--blue)}
+  .source-badge.gh{border-color:var(--green);color:var(--green)}
+  .source-badge.hw{border-color:var(--purple);color:var(--purple)}
+  .source-badge.rd{border-color:var(--amber);color:var(--amber)}
 
-  .stats-strip {
-    display:flex; gap:20px; margin:24px 0; flex-wrap:wrap;
-  }
-  .stat {
-    flex:1; min-width:140px; padding:14px;
-    border:1px solid var(--rule); border-radius:6px; background:#fff;
-  }
-  .stat .label {
-    font-size:11px; text-transform:uppercase; letter-spacing:2px; color:var(--ink-dim);
-    margin-bottom:4px;
-  }
-  .stat .value {
-    font-family:ui-serif,Georgia,serif; font-size:28px; font-weight:700;
-    color:var(--accent);
-  }
-  .stat .sub { font-size:12px; color:var(--ink-dim); margin-top:2px; }
+  /* Section headers */
+  .section{padding:32px 0}
+  .section h2{font-size:22px;font-weight:700;color:var(--text-bright);margin-bottom:4px}
+  .section .section-desc{font-size:14px;color:var(--text-dim);margin-bottom:20px}
 
-  .colophon {
-    margin-top:80px; padding-top:24px; border-top:1px solid var(--rule);
-    font-size:13px; color:var(--ink-dim); text-align:center; line-height:1.7;
-  }
-  .colophon a { color:var(--accent); text-decoration:none; }
-  .colophon .quote { font-style:italic; margin:8px 0; }
+  /* Stack layers */
+  .layer{margin-bottom:28px}
+  .layer-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .layer-icon{font-size:22px}
+  .layer-name{font-size:18px;font-weight:700;color:var(--text-bright)}
+  .layer-count{font-size:13px;color:var(--text-dim);padding:2px 8px;background:var(--surface2);border-radius:12px}
+  .layer-desc{font-size:13px;color:var(--text-dim);margin-bottom:14px;padding-left:32px}
 
-  @media (max-width:600px) {
-    .page { padding:32px 18px 56px; }
-    header.hero h1 { font-size:32px; }
-    .sector-grid { grid-template-columns:1fr; }
+  /* Ticker cards */
+  .ticker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;padding-left:32px}
+  .ticker-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;transition:border-color .2s}
+  .ticker-card:hover{border-color:var(--accent)}
+  .ticker-card .tc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+  .ticker-card .tc-ticker{font-size:18px;font-weight:800;color:var(--accent);font-family:ui-monospace,SF Mono,Menlo,monospace;letter-spacing:0.5px}
+  .ticker-card .tc-exchange{font-size:11px;color:var(--text-dim);padding:2px 8px;border:1px solid var(--border);border-radius:4px}
+  .ticker-card .tc-company{font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:6px}
+  .ticker-card .tc-mcap{font-size:12px;color:var(--text-dim);margin-bottom:8px}
+  .ticker-card .tc-desc{font-size:13px;color:var(--text);margin-bottom:10px;line-height:1.5}
+  .ticker-card .tc-role{font-size:12px;color:var(--cyan);margin-bottom:6px;font-weight:500}
+  .ticker-card .tc-role::before{content:"SpaceX role: ";color:var(--text-dim);font-weight:400}
+  .ticker-card .tc-products{font-size:12px;color:var(--text-dim);margin-bottom:6px}
+  .ticker-card .tc-products::before{content:"Products: ";color:var(--text-dim);font-weight:600}
+  .ticker-card .tc-contract{font-size:12px;color:var(--green);padding:6px 8px;background:rgba(34,197,94,0.08);border-radius:4px;margin-top:6px}
+  .ticker-card .tc-contract::before{content:"📋 ";font-weight:600}
+  .ticker-card .tc-sources{display:flex;gap:4px;margin-top:8px}
+  .tc-source-tag{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;text-transform:uppercase}
+  .tc-source-tag.tv{background:rgba(59,130,246,0.15);color:var(--blue)}
+  .tc-source-tag.gh{background:rgba(34,197,94,0.15);color:var(--green)}
+  .tc-source-tag.hw{background:rgba(168,85,247,0.15);color:var(--purple)}
+  .tc-source-tag.rd{background:rgba(234,179,8,0.15);color:var(--amber)}
+
+  /* Flow diagram */
+  .flow-diagram{padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:32px;overflow-x:auto}
+  .flow-row{display:flex;align-items:center;gap:0;min-width:900px}
+  .flow-node{flex:1;padding:12px 8px;text-align:center;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font-size:12px;font-weight:600;color:var(--text-bright);min-height:60px;display:flex;align-items:center;justify-content:center}
+  .flow-node.accent{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+  .flow-arrow{flex:0 0 30px;text-align:center;color:var(--text-dim);font-size:18px}
+  .flow-labels{display:flex;gap:0;min-width:900px;margin-top:6px}
+  .flow-label{flex:1;text-align:center;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
+
+  /* Overlap matrix */
+  .matrix-table{width:100%;border-collapse:collapse;font-size:12px}
+  .matrix-table th,.matrix-table td{border:1px solid var(--border);padding:6px 8px;text-align:center}
+  .matrix-table th{background:var(--surface2);color:var(--text-dim);font-weight:600;font-size:11px}
+  .matrix-table td.ticker{font-weight:700;color:var(--accent);font-family:monospace;text-align:left}
+  .matrix-table .yes{color:var(--green)}
+  .matrix-table .no{color:var(--border)}
+
+  /* Original GitHub content preserved */
+  .github-section{padding:32px 0;border-top:1px solid var(--border)}
+  .github-section h2{font-size:22px;font-weight:700;color:var(--text-bright);margin-bottom:16px}
+  .github-section h3{font-size:17px;font-weight:600;color:var(--text);margin:20px 0 8px}
+  .github-section p{margin-bottom:12px;color:var(--text)}
+  .github-section ul{padding-left:22px;margin-bottom:16px}
+  .github-section li{margin-bottom:8px;color:var(--text-dim);font-size:14px}
+  .github-section strong{color:var(--text-bright)}
+
+  .briefs-table{width:100%;border-collapse:collapse;margin:12px 0}
+  .briefs-table th,.briefs-table td{border-bottom:1px solid var(--border);padding:8px 12px;text-align:left;font-size:13px}
+  .briefs-table th{color:var(--text-dim);font-weight:600;background:var(--surface2)}
+  .briefs-table td a{color:var(--blue)}
+
+  /* Footer */
+  footer{padding:48px 0 32px;border-top:1px solid var(--border);text-align:center}
+  footer .colophon{font-size:13px;color:var(--text-dim);line-height:1.8}
+  footer .colophon a{color:var(--blue)}
+  footer .quote{font-style:italic;color:var(--text);margin:8px 0}
+
+  /* Filter buttons */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .filter-btn{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);cursor:pointer;transition:all .2s}
+  .filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  /* Search */
+  .search-box{width:100%;padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;margin-bottom:20px}
+  .search-box:focus{outline:none;border-color:var(--accent)}
+
+  @media(max-width:768px){
+    header.hero h1{font-size:26px}
+    .ticker-grid{grid-template-columns:1fr;padding-left:0}
+    .layer-desc{padding-left:0}
   }
 </style>
 </head>
 <body>
-<div class="page">
 
 <header class="hero">
-  <h1>SpaceX-IPO-Tracker</h1>
-  <div class="tagline">Daily AI-managed stock research on 14 SpaceX-IPO beneficiaries across 4 sectors. Multi-agent LLM Bull/Bear/Judge + 12 technical signals. Publicly Brier-audited every night.</div>
-  <div class="meta">
-    Running since <strong>2026-05-12</strong> · auto-published NY 14:00 ET ·
-    <a href="https://github.com/alex-jb/spacex-ipo-tracker">GitHub source</a> ·
-    <a href="briefs/">All briefs</a>
+  <div class="container">
+    <h1>🚀 SpaceX Supply Chain Atlas</h1>
+    <div class="tagline">Comprehensive supply chain map of 43 tickers across 8 stack layers — combining TradingView watchlist data, the <a href="https://github.com/alex-jb/spacex-ipo-tracker" style="color:var(--blue)">alex-jb/spacex-ipo-tracker</a> GitHub project, and Hawkmont Research. Each ticker researched with SpaceX relationship, confirmed contracts, and key products.</div>
+    <div class="meta">
+      <span><span class="dot"></span>Updated 2026-07-05</span>
+      <span>SpaceX IPO: June 12, 2026 — NASDAQ:SPCX — ~$1.75T</span>
+      <span><a href="https://github.com/timlihk/spacex-ipo-tracker">GitHub source</a></span>
+      <span><a href="briefs/">All briefs</a></span>
+    </div>
   </div>
 </header>
 
-<section class="thesis">
-  Every popular YouTuber + Twitter newsletter is pushing "SpaceX beneficiary" stock picks during the IPO window. None of them publish their actual decision log. This tracker does the opposite: every BUY/SELL/WAIT decision is committed to git the same day, then Brier-audited against ground truth after the dust settles.
-</section>
+<div class="container">
 
-<section class="signals">
-  <h2>14-ticker watchlist · 4 sectors</h2>
-  <p>Watchlist expansion 2026-05-13 from 8 SpaceX-pure-play to 14 across the Sun Yuchen 2026 frontier-tech thesis. Each card shows the relevant tickers.</p>
-  <div class="sector-grid">
-    <div class="sector-card">
-      <h3>🛰 Space (8)</h3>
-      <div class="tickers">RKLB · ASTS · LUNR · BKSY · PL · RDW · LMT · LIN</div>
-    </div>
-    <div class="sector-card">
-      <h3>🤖 Physical AI (2)</h3>
-      <div class="tickers">TSLA · SYM</div>
-    </div>
-    <div class="sector-card">
-      <h3>🧠 AI Infra (2)</h3>
-      <div class="tickers">NVDA · AVGO</div>
-    </div>
-    <div class="sector-card">
-      <h3>🚁 Drones / Defense (2)</h3>
-      <div class="tickers">AVAV · KTOS</div>
-    </div>
+<!-- Stats -->
+<div class="stats">
+  <div class="stat"><div class="label">Total Tickers</div><div class="value">43</div><div class="sub">across 8 layers</div></div>
+  <div class="stat"><div class="label">Stack Layers</div><div class="value">8</div><div class="sub">materials → AI infra</div></div>
+  <div class="stat"><div class="label">Data Sources</div><div class="value">4</div><div class="sub">TV + GitHub + Hawkmont + Reddit</div></div>
+  <div class="stat"><div class="label">SpaceX IPO</div><div class="value">$1.75T</div><div class="sub">June 12, 2026</div></div>
+</div>
+
+<!-- Source badges -->
+<div class="sources">
+  <span class="source-badge tv">📺 TradingView watchlist 'spacex' — 20 tickers</span>
+  <span class="source-badge gh">💻 alex-jb/spacex-ipo-tracker (GitHub) — 21 tickers</span>
+  <span class="source-badge hw">🔬 Hawkmont Research — 6 hidden gems</span>
+  <span class="source-badge rd">💬 Reddit r/Stocks_Picks — community list</span>
+</div>
+
+<!-- Flow diagram -->
+<div class="flow-diagram">
+  <div class="flow-row">
+    <div class="flow-node">⛏️ Materials</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">⚙️ Components</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">📡 RF & Comms</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">🖨️ Additive Mfg</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node accent">🚀 SpaceX</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">🛰️ Launch & Space</div>
   </div>
-</section>
+  <div class="flow-row" style="margin-top:8px">
+    <div class="flow-node" style="visibility:hidden"></div>
+    <div class="flow-arrow" style="visibility:hidden">→</div>
+    <div class="flow-node" style="visibility:hidden"></div>
+    <div class="flow-arrow" style="visibility:hidden">→</div>
+    <div class="flow-node" style="visibility:hidden"></div>
+    <div class="flow-arrow" style="visibility:hidden">→</div>
+    <div class="flow-node accent">🧠 xAI / AI Infra</div>
+    <div class="flow-arrow">←</div>
+    <div class="flow-node">⚡ Power & Energy</div>
+  </div>
+  <div class="flow-labels" style="min-width:900px">
+    <div class="flow-label">Linde, ATI, CRS, HXL</div>
+    <div class="flow-label">HEICO, TransDigm, Moog</div>
+    <div class="flow-label">Filtronic, WNC, STM</div>
+    <div class="flow-label">Velo3D, Sphere Corp</div>
+    <div class="flow-label">SPCX</div>
+    <div class="flow-label">RKLB, ASTS, LUNR</div>
+  </div>
+  <div class="flow-labels" style="min-width:900px;margin-top:2px">
+    <div class="flow-label"></div><div class="flow-label"></div><div class="flow-label"></div><div class="flow-label"></div>
+    <div class="flow-label">NVDA, AVGO, TSM</div>
+    <div class="flow-label">CEG, GEV, BE, CRWV</div>
+  </div>
+</div>
 
-<section class="signals">
-  <h2>What each daily brief contains</h2>
-  <ul class="signal-list">
-    <li><strong>Ranked BUY/WAIT/SELL</strong> — Orallexa multi-agent LLM (Bull / Bear / Judge / Critic / Memory).</li>
-    <li><strong>Setup classifier</strong> — Trend / Mean-reversion bounce / Breakdown / Trend-chase warning. Auto-derived from MA stack + RSI + MACD.</li>
-    <li><strong>Position sizing tier</strong> — Full / Half / Tiny / Short-half / Pass. Calibrated to 1-2% account risk per trade.</li>
-    <li><strong>FTD detector</strong> — Follow-Through Day on S&P 500 and NASDAQ. When fires, all Trend setups auto-upgrade.</li>
-    <li><strong>VIX regime</strong> — Calm / mildly elevated / elevated / panic. Sizing downgrades automatically above 20.</li>
-    <li><strong>Sector rotation aggregate</strong> — Which of the 4 sectors is leading vs lagging today.</li>
-    <li><strong>Diversification illusion alert</strong> — 30-day pairwise correlation; flags when two "different" Trend bets are actually 0.7+ correlated (concentration not diversification).</li>
-    <li><strong>Earnings calendar</strong> — Binary event countdown; sizing forced to Tiny when ≤3 days.</li>
-    <li><strong>Insider Form 4</strong> — Last 14 days of material insider trades (Burry-framework signal).</li>
-    <li><strong>Weekday master lens</strong> — Monday Buffett · Tuesday Druckenmiller · Wednesday Lynch · Thursday Soros · Friday Burry. Top 3 movers run through that day's framework.</li>
-    <li><strong>Brier audit (nightly)</strong> — Every BUY/SELL judged against next-day close. Per-ticker calibration + 7-day drift detection.</li>
-    <li><strong>Sources</strong> — Yahoo Finance + CNBC pre-market RSS, SEC EDGAR insider filings via yfinance, ^VIX/^GSPC/^IXIC market data.</li>
+<!-- Search & Filter -->
+<input type="text" class="search-box" id="searchBox" placeholder="Search tickers, companies, or SpaceX roles…" oninput="filterTickers()">
+
+<div class="filters" id="filters">
+  <button class="filter-btn active" onclick="setFilter('all', this)">All Layers (43)</button>
+  <button class="filter-btn" onclick="setFilter('materials', this)">⛏️ Materials (7)</button>
+  <button class="filter-btn" onclick="setFilter('components', this)">⚙️ Components (9)</button>
+  <button class="filter-btn" onclick="setFilter('electronics-rf', this)">📡 RF & Comms (6)</button>
+  <button class="filter-btn" onclick="setFilter('additive-mfg', this)">🖨️ Additive Mfg (2)</button>
+  <button class="filter-btn" onclick="setFilter('launch-services', this)">🚀 Launch & Space (9)</button>
+  <button class="filter-btn" onclick="setFilter('power-energy', this)">⚡ Power & Energy (5)</button>
+  <button class="filter-btn" onclick="setFilter('ai-infra', this)">🧠 AI Infra (6)</button>
+  <button class="filter-btn" onclick="setFilter('spacex-direct', this)">🎯 Direct SpaceX (2)</button>
+</div>
+
+<!-- Stack layers (populated by JS) -->
+<div id="stackContainer"></div>
+
+<!-- Overlap matrix -->
+<div class="section">
+  <h2>📊 Cross-Source Overlap Matrix</h2>
+  <div class="section-desc">Which tickers appear in which sources. The low overlap means combining all sources gives a significantly more complete picture.</div>
+  <div style="overflow-x:auto">
+    <table class="matrix-table" id="overlapMatrix"></table>
+  </div>
+</div>
+
+<!-- Original GitHub tracker content -->
+<div class="github-section">
+  <h2>🤖 Original AI Tracker (alex-jb/spacex-ipo-tracker)</h2>
+  <p>This page extends the original <a href="https://github.com/alex-jb/spacex-ipo-tracker">spacex-ipo-tracker</a> project by Alex Ji — a daily AI-managed stock research system on SpaceX IPO beneficiaries. The original tracker runs a multi-agent LLM (Bull/Bear/Judge) with 9 ML technical signals, publishing daily briefs since 2026-05-12.</p>
+
+  <h3>How the daily brief is produced</h3>
+  <ul>
+    <li><strong>Ranked BUY/WAIT/SELL</strong> — Orallexa multi-agent LLM (Bull / Bear / Judge / Critic / Memory)</li>
+    <li><strong>Setup classifier</strong> — Trend / Mean-reversion bounce / Breakdown / Trend-chase warning</li>
+    <li><strong>Position sizing tier</strong> — Full / Half / Tiny / Short-half / Pass (1-2% account risk)</li>
+    <li><strong>FTD detector</strong> — Follow-Through Day on S&P 500 and NASDAQ</li>
+    <li><strong>VIX regime</strong> — Calm / mildly elevated / elevated / panic</li>
+    <li><strong>Brier audit (nightly)</strong> — Every BUY/SELL judged against next-day close</li>
   </ul>
-</section>
 
-<section class="signals">
-  <h2>Recent briefs</h2>
-  <table class="briefs">
+  <h3>Recent briefs</h3>
+  <table class="briefs-table">
     <tr><th>Date</th><th>Day</th><th>Link</th></tr>
     {% for brief in site.static_files reversed %}
       {% if brief.path contains 'briefs/' and brief.path contains '.md' %}
@@ -178,31 +265,163 @@
       {% endif %}
     {% endfor %}
   </table>
-</section>
 
-<section class="signals">
-  <h2>The honest part</h2>
-  <p>This tracker is not investment advice. It runs in <strong>paper-trade mode</strong> (Form A HITL) — the executor is physically incapable of placing trades. We commit to public Brier audit after SpaceX lists so the system's actual edge (or lack of it) is verifiable.</p>
-  <p>Current state (2026-05-13, Day 2 of operation):</p>
-  <ul class="signal-list">
-    <li><strong>Brier audit</strong> — 14 resolved BUY/SELL decisions, overall Brier = 0.2492 (slightly better than coin-flip 0.250).</li>
-    <li><strong>Confidence calibration</strong> — 50-60% confidence band actually hits 62.5% (well calibrated). 60-70% band hits only 50% (over-confident — caveat emptor on higher-conviction signals).</li>
-    <li><strong>Best-edge ticker</strong> — LUNR (Brier 0.176). Worst-edge — PL (Brier 0.384).</li>
-  </ul>
-  <p>If the AI is full of it, you'll see it in the audit. If it has alpha, you'll see that too. The point of being public is the commitment device.</p>
-</section>
+  <h3>The honest part</h3>
+  <p>This tracker is not investment advice. It runs in paper-trade mode. Every BUY/SELL/WAIT decision is committed to git the same day, then Brier-audited against ground truth. If the AI is full of it, you'll see it in the audit.</p>
+</div>
 
-<div class="colophon">
-  <div>Built by Alex Ji · solo founder · NY · 2026</div>
-  <div class="quote">"There is no one at the wheel. That's not scary — that's the opportunity."</div>
-  <div style="margin-top:8px;">Cost: ~$0.10/day in Claude API calls. Total LLM spend, all 4 daily crons.</div>
-  <div style="margin-top:8px;">
-    <a href="https://github.com/alex-jb/spacex-ipo-tracker">github.com/alex-jb/spacex-ipo-tracker</a> ·
-    <a href="https://github.com/alex-jb/orallexa-ai-trading-agent">orallexa-ai-trading-agent</a> ·
-    <a href="https://github.com/alex-jb/solo-founder-os">solo-founder-os</a>
+</div><!-- /container -->
+
+<footer>
+  <div class="container">
+    <div class="colophon">
+      <div><strong>SpaceX Supply Chain Atlas</strong> — Updated 2026-07-05 by Tim Li</div>
+      <div>Combines: TradingView watchlist · <a href="https://github.com/alex-jb/spacex-ipo-tracker">alex-jb/spacex-ipo-tracker</a> · Hawkmont Research · Reddit</div>
+      <div class="quote">"There is no one at the wheel. That's not scary — that's the opportunity."</div>
+      <div style="margin-top:8px">
+        <a href="https://github.com/timlihk/spacex-ipo-tracker">github.com/timlihk/spacex-ipo-tracker</a> ·
+        <a href="https://github.com/alex-jb/spacex-ipo-tracker">original repo (alex-jb)</a> ·
+        <a href="https://github.com/alex-jb/orallexa-ai-trading-agent">orallexa-ai-trading-agent</a>
+      </div>
+    </div>
   </div>
-</div>
+</footer>
 
-</div>
+<script src="supply-chain-data.js"></script>
+<script>
+// === Render stack layers ===
+let currentFilter = 'all';
+let searchTerm = '';
+
+function getSourceTags(ticker) {
+  const tags = [];
+  if (SUPPLY_CHAIN_DATA.tradingViewOnly.includes(ticker) || 
+      (ticker === 'LIN') || 
+      (ticker === 'FLTCF') || 
+      (ticker === 'VELO') || 
+      (ticker === 'RDW')) {
+    // Check all sources
+  }
+  // Simple mapping
+  const tv = ['HEI','TDG','HXL','MOG.A','PH','ATI','CRS','DCO','ATRO','APD','GTLS','PKE','STLD','MTRN','GHM','SIF','TRYIY','LIN','FLTCF','VELO','CPSH'];
+  const gh = SUPPLY_CHAIN_DATA.githubExpanded;
+  const hw = ['FLTCF','347800.KS','6285.TW','2313.TW','6271.TW','CPSH','RDW','VELO','STM'];
+  const rd = ['VELO','FTC.L','RDW','STM','AMD'];
+  
+  if (tv.includes(ticker)) tags.push('<span class="tc-source-tag tv">TV</span>');
+  if (gh.includes(ticker)) tags.push('<span class="tc-source-tag gh">GitHub</span>');
+  if (hw.includes(ticker)) tags.push('<span class="tc-source-tag hw">Hawkmont</span>');
+  if (rd.includes(ticker)) tags.push('<span class="tc-source-tag rd">Reddit</span>');
+  return tags.join('');
+}
+
+function renderStack() {
+  const container = document.getElementById('stackContainer');
+  let html = '';
+  
+  SUPPLY_CHAIN_DATA.layers.forEach(layer => {
+    if (currentFilter !== 'all' && currentFilter !== layer.id) return;
+    
+    let tickers = layer.tickers;
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      tickers = tickers.filter(t => 
+        t.ticker.toLowerCase().includes(q) ||
+        t.company.toLowerCase().includes(q) ||
+        t.spacexRole.toLowerCase().includes(q) ||
+        (t.description && t.description.toLowerCase().includes(q))
+      );
+    }
+    
+    if (tickers.length === 0) return;
+    
+    html += `<div class="layer" id="layer-${layer.id}">
+      <div class="layer-header">
+        <span class="layer-icon">${layer.icon}</span>
+        <span class="layer-name">${layer.name}</span>
+        <span class="layer-count">${tickers.length} ticker${tickers.length > 1 ? 's' : ''}</span>
+      </div>
+      <div class="layer-desc">${layer.description}</div>
+      <div class="ticker-grid">`;
+    
+    tickers.forEach(t => {
+      html += `<div class="ticker-card" data-ticker="${t.ticker}">
+        <div class="tc-header">
+          <span class="tc-ticker">${t.ticker}</span>
+          <span class="tc-exchange">${t.exchange}</span>
+        </div>
+        <div class="tc-company">${t.company}</div>
+        <div class="tc-mcap">Market cap: ${t.marketCap}</div>
+        <div class="tc-desc">${t.description}</div>
+        <div class="tc-role">${t.spacexRole}</div>
+        <div class="tc-products">${t.keyProducts}</div>
+        ${t.contractDetails ? `<div class="tc-contract">${t.contractDetails}</div>` : ''}
+        <div class="tc-sources">${getSourceTags(t.ticker)}</div>
+      </div>`;
+    });
+    
+    html += `</div></div>`;
+  });
+  
+  container.innerHTML = html;
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderStack();
+}
+
+function filterTickers() {
+  searchTerm = document.getElementById('searchBox').value;
+  renderStack();
+}
+
+// === Render overlap matrix ===
+function renderMatrix() {
+  const matrix = document.getElementById('overlapMatrix');
+  const allTickers = new Set();
+  
+  const tvList = ['HEI','TDG','HXL','MOG.A','PH','ATI','CRS','DCO','ATRO','APD','GTLS','PKE','STLD','MTRN','GHM','SIF','TRYIY','LIN','FLTCF','VELO','CPSH'];
+  const ghList = SUPPLY_CHAIN_DATA.githubExpanded;
+  const hwList = ['FLTCF','347800.KS','6285.TW','2313.TW','6271.TW','CPSH','RDW','VELO','STM'];
+  const rdList = ['VELO','FTC.L','RDW','STM'];
+  
+  // Add all tickers from layers
+  SUPPLY_CHAIN_DATA.layers.forEach(l => l.tickers.forEach(t => allTickers.add(t.ticker)));
+  // Add from source lists
+  tvList.forEach(t => allTickers.add(t));
+  ghList.forEach(t => allTickers.add(t));
+  hwList.forEach(t => allTickers.add(t));
+  
+  let html = '<tr><th>Ticker</th><th>TradingView</th><th>GitHub</th><th>Hawkmont</th><th>Reddit</th></tr>';
+  
+  const sorted = [...allTickers].sort();
+  sorted.forEach(ticker => {
+    const tv = tvList.includes(ticker);
+    const gh = ghList.includes(ticker);
+    const hw = hwList.includes(ticker);
+    const rd = rdList.includes(ticker);
+    const count = [tv,gh,hw,rd].filter(Boolean).length;
+    if (count === 0) return; // skip unknown
+    
+    html += `<tr style="${count >= 2 ? 'background:rgba(249,115,22,0.05)' : ''}">
+      <td class="ticker">${ticker}</td>
+      <td class="${tv?'yes':'no'}">${tv?'✓':'—'}</td>
+      <td class="${gh?'yes':'no'}">${gh?'✓':'—'}</td>
+      <td class="${hw?'yes':'no'}">${hw?'✓':'—'}</td>
+      <td class="${rd?'yes':'no'}">${rd?'✓':'—'}</td>
+    </tr>`;
+  });
+  
+  matrix.innerHTML = html;
+}
+
+// Init
+renderStack();
+renderMatrix();
+</script>
+
 </body>
 </html>
