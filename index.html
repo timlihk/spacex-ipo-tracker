@@ -252,18 +252,8 @@
   </ul>
 
   <h3>Recent briefs</h3>
-  <table class="briefs-table">
+  <table class="briefs-table" id="briefsTable">
     <tr><th>Date</th><th>Day</th><th>Link</th></tr>
-    {% for brief in site.static_files reversed %}
-      {% if brief.path contains 'briefs/' and brief.path contains '.md' %}
-        {% assign filename = brief.path | split: '/' | last | replace: '.md', '' %}
-        <tr>
-          <td><strong>{{ filename }}</strong></td>
-          <td>{{ filename | date: '%A' }}</td>
-          <td><a href="{{ brief.path | relative_url }}">read brief →</a></td>
-        </tr>
-      {% endif %}
-    {% endfor %}
   </table>
 
   <h3>The honest part</h3>
@@ -421,6 +411,35 @@ function renderMatrix() {
 // Init
 renderStack();
 renderMatrix();
+
+// === Render briefs table (replaces Jekyll Liquid tags for static hosting) ===
+async function renderBriefs() {
+  const table = document.getElementById('briefsTable');
+  if (!table) return;
+  
+  // Try to fetch the briefs directory listing
+  try {
+    const resp = await fetch('briefs/');
+    const html = await resp.text();
+    // Parse directory listing for .md files
+    const matches = [...html.matchAll(/href="(20\d{2}-\d{2}-\d{2}\.md)"/g)];
+    const dates = matches.map(m => m[1].replace('.md', '')).sort().reverse();
+    
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    
+    dates.slice(0, 20).forEach(date => {
+      const d = new Date(date + 'T00:00:00');
+      const dayName = dayNames[d.getDay()] || '';
+      const row = table.insertRow();
+      row.innerHTML = `<td><strong>${date}</strong></td><td>${dayName}</td><td><a href="briefs/${date}.md">read brief →</a></td>`;
+    });
+  } catch(e) {
+    // If directory listing fails, show a link to the briefs folder
+    const row = table.insertRow();
+    row.innerHTML = `<td colspan="3" style="text-align:center"><a href="briefs/">Browse all briefs →</a></td>`;
+  }
+}
+renderBriefs();
 </script>
 
 </body>
